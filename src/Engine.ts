@@ -6,6 +6,7 @@ import path = require("path");
 import * as TomgUtils from "./Utils";
 import changeCase = require("change-case");
 import { AbstractNamingStrategy } from "./AbstractNamingStrategy";
+import * as _ from "lodash";
 
 export class Engine {
     constructor(
@@ -14,17 +15,22 @@ export class Engine {
     ) {}
 
     public async createModelFromDatabase(): Promise<boolean> {
-        let dbModel = await this.getEntitiesInfo(
-            this.Options.databaseName,
-            this.Options.host,
-            this.Options.port,
-            this.Options.user,
-            this.Options.password,
-            this.Options.schemaName,
-            this.Options.ssl,
-            this.Options.namingStrategy,
-            this.Options.relationIds
-        );
+        let dbModel;
+        if (this.Options.model) {
+            dbModel = JSON.parse(fs.readFileSync(this.Options.model, "utf8"));
+        } else {
+            dbModel = await this.getEntitiesInfo(
+                this.Options.databaseName,
+                this.Options.host,
+                this.Options.port,
+                this.Options.user,
+                this.Options.password,
+                this.Options.schemaName,
+                this.Options.ssl,
+                this.Options.namingStrategy,
+                this.Options.relationIds
+            );
+        }
         if (dbModel.entities.length > 0) {
             this.createModelFromMetadata(dbModel);
         } else {
@@ -65,6 +71,10 @@ export class Engine {
         let resultPath = this.Options.resultsPath;
         if (!fs.existsSync(resultPath)) fs.mkdirSync(resultPath);
         let entitesPath = resultPath;
+
+        this.createModelFile(resultPath, databaseModel);
+        console.log("Config", this.Options);
+
         if (!this.Options.noConfigs) {
             this.createTsConfigFile(resultPath);
             this.createTypeOrmConfig(resultPath);
@@ -201,6 +211,14 @@ export class Engine {
         });
     }
 
+    private createModelFile(resultPath: string, databaseModel: DatabaseModel) {
+        fs.writeFileSync(
+            path.resolve(resultPath, "databaseModel.json"),
+            JSON.stringify(databaseModel, null, 2),
+            { encoding: "UTF-8", flag: "w" }
+        );
+    }
+
     //TODO:Move to mustache template file
     private createTsConfigFile(resultPath) {
         fs.writeFileSync(
@@ -280,4 +298,5 @@ export interface EngineOptions {
     constructor: boolean;
     namingStrategy: AbstractNamingStrategy;
     relationIds: boolean;
+    model?: string;
 }

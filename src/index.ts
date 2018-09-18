@@ -22,8 +22,8 @@ var argv = Yargs.usage(
     })
     .option("d", {
         alias: "database",
-        describe: "Database name(or path for sqlite)",
-        demand: true
+        describe: "Database name(or path for sqlite)"
+        // demand: true
     })
     .option("u", {
         alias: "user",
@@ -98,6 +98,10 @@ var argv = Yargs.usage(
         describe: "Generate constructor allowing partial initialization",
         boolean: true,
         default: false
+    })
+    .option("m", {
+        alias: "model",
+        describe: "Model file that can be used for generation."
     }).argv;
 
 let driver: AbstractDriver;
@@ -140,6 +144,7 @@ switch (argv.e) {
         TomgUtils.LogError("Database engine not recognized.", false);
         throw new Error("Database engine not recognized.");
 }
+
 let namingStrategy: AbstractNamingStrategy;
 if (argv.namingStrategy && argv.namingStrategy != "") {
     let req = require(argv.namingStrategy);
@@ -165,7 +170,8 @@ let engine = new Engine(driver, {
     lazy: argv.lazy,
     constructor: argv.generateConstructor,
     relationIds: argv.relationIds,
-    namingStrategy: namingStrategy
+    namingStrategy: namingStrategy,
+    model: argv.m ? argv.m.toString() : null
 });
 
 console.log(TomgUtils.packageVersion());
