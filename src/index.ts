@@ -102,6 +102,10 @@ var argv = Yargs.usage(
     .option("m", {
         alias: "model",
         describe: "Model file that can be used for generation."
+    })
+    .option("c", {
+        alias: "compare",
+        describe: "Model file that will be compared."
     }).argv;
 
 let driver: AbstractDriver;
@@ -171,7 +175,8 @@ let engine = new Engine(driver, {
     constructor: argv.generateConstructor,
     relationIds: argv.relationIds,
     namingStrategy: namingStrategy,
-    model: argv.m ? argv.m.toString() : null
+    model: argv.m ? argv.m.toString() : null,
+    compare: argv.c ? argv.c.toString() : null
 });
 
 console.log(TomgUtils.packageVersion());

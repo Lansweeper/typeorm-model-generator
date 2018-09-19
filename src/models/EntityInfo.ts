@@ -3,25 +3,12 @@ import { RelationInfo } from "./RelationInfo";
 
 export class EntityInfo {
     EntityName: string;
+    sqlName: string;
     Columns: ColumnInfo[];
     Imports: string[];
-    UniqueImports: string[];
     Indexes: IndexInfo[];
-    Schema: string;
+    Schema: string | undefined;
     GenerateConstructor: boolean;
-
-    relationImports(): any {
-        var imports: string[] = [];
-        this.Columns.forEach(column => {
-            column.relations.forEach(relation => {
-                if (this.EntityName != relation.relatedTable)
-                    imports.push(relation.relatedTable);
-            });
-        });
-        this.UniqueImports = imports.filter(function(elem, index, self) {
-            return index == self.indexOf(elem);
-        });
-    }
 
     hasRelation(checkRelation: (relation: RelationInfo) => boolean): boolean {
         let rtn: boolean = false;

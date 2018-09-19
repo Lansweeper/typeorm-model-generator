@@ -1,8 +1,8 @@
-import { {{#if hasIndexes}}Index, {{/if}}Entity, PrimaryGeneratedColumn, Column, {{#if hasOneToOne}}OneToOne, {{/if}}{{#if hasOneToMany}}OneToMany, {{/if}}{{#if hasManyToOne}}ManyToOne, {{/if}}{{#if hasManyToMany}}ManyToMany, JoinTable, {{/if}}{{#if hasJoinColumn}}JoinColumn, {{/if}}RelationId } from "typeorm";
-{{relationImports}}{{#each UniqueImports}}import {{curly true}} {{toEntityName this}} {{curly false}} from "./{{toFileName this}}";
+import { {{#if hasIndexes}}Index, {{/if}}Entity, PrimaryGeneratedColumn, Column, {{#if hasOneToOne}}OneToOne, {{/if}}{{#if hasOneToMany}}OneToMany, {{/if}}{{#if hasManyToOne}}ManyToOne, {{/if}}{{#if hasManyToMany}}ManyToMany, JoinTable, {{/if}}{{#if hasJoinColumn}}JoinColumn, {{/if}}{{#if relationIdField}}RelationId {{/if}}{{~#if 1~}} }{{/if}} from 'typeorm';
+{{#each Imports}}import {{curly true}} {{ this }} {{curly false}} from './{{ this }}';
 {{/each}}
 
-@Entity('{{EntityName}}'{{#Schema}}, {schema:'{{.}}'}{{/Schema}})
+@Entity('{{sqlName}}'{{#Schema}}, {schema: '{{.}}'}{{/Schema}})
 {{#Indexes}}{{^isPrimaryKey}}@Index('{{name}}', [{{#columns}}'{{name}}', {{/columns}}]{{#isUnique}}, {unique:true}{{/isUnique}})
 {{/isPrimaryKey}}{{/Indexes}}export class {{toEntityName EntityName}} {
 {{#Columns}}
@@ -22,17 +22,15 @@ import { {{#if hasIndexes}}Index, {{/if}}Entity, PrimaryGeneratedColumn, Column,
         name: '{{sqlName}}'
     })
     {{toPropertyName tsName}}: {{ts_type}}{{#is_nullable}} | null{{/is_nullable}};
-        {{/relations}}{{#relations}}
-    @{{relationType}}(type=>{{toEntityName relatedTable}}, {{toEntityName relatedTable}} => {{toEntityName relatedTable}}.{{#if isOwner}}{{toPropertyName ownerColumn}}, { {{#../isPrimary}}primary: true, {{/../isPrimary}}{{^../is_nullable}} nullable: false, {{/../is_nullable}}{{#actionOnDelete}}onDelete: '{{.}}', {{/actionOnDelete}}{{#actionOnUpdate}}onUpdate: '{{.}}'{{/actionOnUpdate}} }{{else}}{{toPropertyName relatedColumn}}{{#if (or actionOnDelete actionOnUpdate ) }}{{#actionOnDelete}}, { onDelete: '{{.}}', {{/actionOnDelete}}{{#actionOnUpdate}}onUpdate: '{{.}}'{{/actionOnUpdate}} }{{/if}}{{/if}}){{#isOwner}}
-    {{#if isManyToMany}}@JoinTable(){{else}}@JoinColumn({ name:'{{ ../sqlName}}'}){{/if}}{{/isOwner}}
+{{/relations}}{{#relations}} @{{relationType}}(type => {{toEntityName relatedTable}}, {{toEntityName relatedTable}} => {{toEntityName relatedTable}}.{{#if isOwner}}{{toPropertyName ownerColumn}}, { {{#../isPrimary}}primary: true, {{/../isPrimary}}{{^../is_nullable}}nullable: false, {{/../is_nullable}}{{#actionOnDelete}}onDelete: '{{.}}', {{/actionOnDelete}}{{#actionOnUpdate}}onUpdate: '{{.}}'{{/actionOnUpdate}}{{~#if 1~}} }{{/if}}{{else}}{{toPropertyName relatedColumn}}{{#if (or actionOnDelete actionOnUpdate ) }}{{#actionOnDelete}}, { onDelete: '{{.}}', {{/actionOnDelete}}{{#actionOnUpdate}}onUpdate: '{{.}}'{{/actionOnUpdate}}{{~#if 1~}} }{{/if}}{{/if}}{{/if}}){{#isOwner}}
+    {{#if isManyToMany}}@JoinTable(){{else}}@JoinColumn({ name: '{{ ../sqlName}}'}){{/if}}{{/isOwner}}
     {{#if (or isOneToMany isManyToMany)}}{{toPropertyName ../tsName}}: {{toLazy (concat  (toEntityName relatedTable) '[]')}};
     {{else}}{{toPropertyName ../tsName}}: {{toLazy (concat (toEntityName relatedTable) ' | null')}};
     {{/if}}
     {{#if relationIdField }}
 
     @RelationId(({{../../EntityName}}: {{../../EntityName}}) => {{../../EntityName}}.{{toPropertyName ../tsName}})
-    {{toPropertyName ../tsName}}Id: {{#if isOneToOne}}{{toLazy ../ts_type}}{{else}}{{toLazy (concat  ../ts_type '[]')}}{{/if}};{{/if}}{{/relations}}
-    {{/Columns}}
+    {{toPropertyName ../tsName}}Id: {{#if isOneToOne}}{{toLazy ../ts_type}}{{else}}{{toLazy (concat  ../ts_type '[]')}}{{/if}};{{/if}}{{/relations}}{{/Columns}}
     {{#if GenerateConstructor}}
     constructor(init?: Partial<{{toEntityName EntityName}}>) {
 		Object.assign(this, init);
