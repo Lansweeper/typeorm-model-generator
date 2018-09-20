@@ -1,4 +1,5 @@
 import { ColumnInfo } from "./ColumnInfo";
+import { IndexInfo } from "./IndexInfo";
 import { RelationInfo } from "./RelationInfo";
 
 export class EntityInfo {
@@ -9,6 +10,26 @@ export class EntityInfo {
     Indexes: IndexInfo[];
     Schema: string | undefined;
     GenerateConstructor: boolean;
+
+    deserialize(input: EntityInfo) {
+        this.EntityName = input.EntityName;
+        this.sqlName = input.sqlName;
+
+        this.Imports = input.Imports;
+        this.Indexes = input.Indexes;
+        this.Schema = input.Schema;
+        this.GenerateConstructor = input.GenerateConstructor;
+
+        if (input.Columns) {
+            this.Columns = [];
+            input.Columns.forEach(column => {
+                const c = new ColumnInfo().deserialize(column);
+                this.Columns.push(c);
+            });
+        }
+
+        return this;
+    }
 
     hasRelation(checkRelation: (relation: RelationInfo) => boolean): boolean {
         let rtn: boolean = false;

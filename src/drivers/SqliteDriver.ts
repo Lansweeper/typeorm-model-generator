@@ -1,6 +1,7 @@
 import { AbstractDriver } from "./AbstractDriver";
 import { ColumnInfo } from "../models/ColumnInfo";
 import { EntityInfo } from "../models/EntityInfo";
+import { IndexInfo } from "../models/IndexInfo";
 import * as TomgUtils from "../Utils";
 
 export class SqliteDriver extends AbstractDriver {

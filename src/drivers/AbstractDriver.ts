@@ -1,5 +1,6 @@
 import { EntityInfo } from "../models/EntityInfo";
 import { DatabaseModel } from "../models/DatabaseModel";
+import { IndexInfo } from "../models/IndexInfo";
 import * as TomgUtils from "../Utils";
 import { RelationInfo } from "../models/RelationInfo";
 import { ColumnInfo } from "../models/ColumnInfo";

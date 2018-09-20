@@ -17,7 +17,9 @@ export class Engine {
     public async createModelFromDatabase(): Promise<boolean> {
         let dbModel;
         if (this.Options.model) {
-            dbModel = JSON.parse(fs.readFileSync(this.Options.model, "utf8"));
+            dbModel = new DatabaseModel().deserialize(
+                JSON.parse(fs.readFileSync(this.Options.model, "utf8"))
+            );
         } else {
             dbModel = await this.getEntitiesInfo(
                 this.Options.databaseName,
@@ -92,7 +94,11 @@ export class Engine {
                 });
             });
             element.GenerateConstructor = this.Options.constructor;
-            element.Imports.filter(function(elem, index, self) {
+            element.Imports = element.Imports.filter(function(
+                elem,
+                index,
+                self
+            ) {
                 return index === self.indexOf(elem);
             });
             let casedFileName = "";
@@ -208,6 +214,9 @@ export class Engine {
             or: function(v1, v2) {
                 return v1 || v2;
             }
+        });
+        Handlebars.registerHelper("escapeQuote", str => {
+            return str.replace(/'/g, "\\'");
         });
     }
 
@@ -364,6 +373,19 @@ export class Engine {
                     }
                 }
             });
+
+            entity.Indexes.forEach(index => {
+                index.columns.forEach(indexCol => {
+                    const columnInfo = _.find(entity.Columns, {
+                        sqlName: changeCase
+                            .camelCase(indexCol.name)
+                            .toLowerCase()
+                    });
+                    if (columnInfo) {
+                        indexCol.name = columnInfo.tsName;
+                    }
+                });
+            });
         });
 
         if (this.Options.compare) {
@@ -401,39 +423,62 @@ export class Engine {
                                         relation.relatedColumn
                                     );
                                 }
+                                const ownerEntity = _.find(
+                                    databaseModel.entities,
+                                    {
+                                        sqlName: changeCase
+                                            .pascalCase(relation.ownerTable)
+                                            .toLowerCase()
+                                    }
+                                );
+                                if (ownerEntity) {
+                                    relation.ownerTable =
+                                        ownerEntity.EntityName;
+                                    const ownerColumn = _.find(
+                                        ownerEntity.Columns,
+                                        {
+                                            sqlName: changeCase
+                                                .camelCase(relation.ownerColumn)
+                                                .toLowerCase()
+                                        }
+                                    );
+                                    if (ownerColumn) {
+                                        relation.ownerColumn =
+                                            ownerColumn.tsName;
+                                    } else {
+                                        const ownerColumn = _.find(
+                                            relatedEntity.Columns,
+                                            {
+                                                sqlName: changeCase
+                                                    .camelCase(
+                                                        relation.ownerColumn
+                                                    )
+                                                    .toLowerCase()
+                                            }
+                                        );
+                                        if (ownerColumn) {
+                                            relation.ownerColumn =
+                                                ownerColumn.tsName;
+                                        } else {
+                                            console.log(
+                                                "Could not find owner column",
+                                                relation.ownerTable,
+                                                relation.ownerColumn
+                                            );
+                                        }
+                                    }
+                                } else {
+                                    console.log(
+                                        "Could not find owner entity",
+                                        relation.ownerTable,
+                                        relation.ownerColumn
+                                    );
+                                }
                             } else {
                                 console.log(
                                     "Could not find related entity",
                                     relation.relatedTable,
                                     relation.relatedColumn
-                                );
-                            }
-                            const ownerEntity = _.find(databaseModel.entities, {
-                                sqlName: changeCase
-                                    .pascalCase(relation.ownerTable)
-                                    .toLowerCase()
-                            });
-                            if (ownerEntity) {
-                                relation.ownerTable = ownerEntity.EntityName;
-                                const ownerColumn = _.find(
-                                    ownerEntity.Columns,
-                                    {
-                                        sqlName: changeCase
-                                            .camelCase(relation.ownerColumn)
-                                            .toLowerCase()
-                                    }
-                                );
-                                if (ownerColumn) {
-                                    relation.ownerColumn = ownerColumn.tsName;
-                                } else {
-                                    // special case doesn't matter
-                                    // console.log('Could not find owner column', relation.ownerTable, relation.ownerColumn);
-                                }
-                            } else {
-                                console.log(
-                                    "Could not find owner entity",
-                                    relation.ownerTable,
-                                    relation.ownerColumn
                                 );
                             }
                         });

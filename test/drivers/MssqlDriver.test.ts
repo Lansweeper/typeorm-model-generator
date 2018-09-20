@@ -4,6 +4,7 @@ import * as Sinon from 'sinon'
 import * as MSSQL from 'mssql'
 import { EntityInfo } from '../../src/models/EntityInfo'
 import { ColumnInfo } from '../../src/models/ColumnInfo'
+import { IndexInfo } from "../../src/models/IndexInfo";
 import { RelationInfo } from '../../src/models/RelationInfo'
 import { Table, IColumnMetadata } from "mssql";
 import { NamingStrategy } from "../../src/NamingStrategy";
@@ -80,7 +81,7 @@ describe('MssqlDriver', function () {
         y.Indexes = <IndexInfo[]>[];
         entities.push(y)
         var expected: EntityInfo[] = JSON.parse(JSON.stringify(entities));
-        expected[0].Columns.push({
+        expected[0].Columns.push(new ColumnInfo().deserialize({
             lenght: null,
             default: 'a',
             is_nullable: true,
@@ -96,8 +97,8 @@ describe('MssqlDriver', function () {
             enumOptions: null,
             is_unique:false,
             is_array:false,
-            relations: <RelationInfo[]>[],
-        })
+            relations: <RelationInfo[]>[]
+        }))
         let result = await driver.GetCoulmnsFromEntity(entities, 'schema');
         expect(result).to.be.deep.equal(expected)
     })

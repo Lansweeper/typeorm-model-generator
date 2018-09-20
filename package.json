@@ -8,7 +8,8 @@
         "start": " node ./dist/src/index.js",
         "test": "gulp coverageRemap",
         "compile": "gulp compile",
-        "precommit": "gulp pre-commit"
+        "precommit": "gulp pre-commit",
+        "gen": "ts-node ./node_modules/typeorm/cli.js migration:generate -n ALL"
     },
     "repository": {
         "type": "git",
@@ -68,7 +69,7 @@
         "mocha": "^5.1.1",
         "prettier": "^1.12.1",
         "remap-istanbul": "^0.12.0",
-        "sinon": "^6.0.0",
+        "sinon": "^6.3.4",
         "sinon-chai": "^3.0.0",
         "typings": "^2.1.1"
     }

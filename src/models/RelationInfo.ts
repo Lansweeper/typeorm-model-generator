@@ -27,4 +27,15 @@ export class RelationInfo {
     get isManyToOne(): boolean {
         return this.relationType == "ManyToOne";
     }
+
+    deserialize(input: RelationInfo) {
+        for (let prop in input) {
+            if (!input.hasOwnProperty(prop)) {
+                continue;
+            }
+
+            this[prop] = input[prop];
+        }
+        return this;
+    }
 }

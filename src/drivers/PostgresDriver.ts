@@ -2,6 +2,7 @@ import { AbstractDriver } from "./AbstractDriver";
 import * as PG from "pg";
 import { ColumnInfo } from "../models/ColumnInfo";
 import { EntityInfo } from "../models/EntityInfo";
+import { IndexInfo } from "../models/IndexInfo";
 import * as TomgUtils from "../Utils";
 
 export class PostgresDriver extends AbstractDriver {

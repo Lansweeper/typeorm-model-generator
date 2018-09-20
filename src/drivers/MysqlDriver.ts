@@ -2,6 +2,7 @@ import { AbstractDriver } from "./AbstractDriver";
 import * as MYSQL from "mysql";
 import { ColumnInfo } from "../models/ColumnInfo";
 import { EntityInfo } from "../models/EntityInfo";
+import { IndexInfo } from "../models/IndexInfo";
 import * as TomgUtils from "../Utils";
 
 export class MysqlDriver extends AbstractDriver {

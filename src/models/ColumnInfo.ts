@@ -29,4 +29,24 @@ export class ColumnInfo {
     constructor() {
         this.relations = [];
     }
+
+    deserialize(input: any) {
+        for (let prop in input) {
+            if (!input.hasOwnProperty(prop)) {
+                continue;
+            }
+
+            if (prop === "relations") {
+                this.relations = [];
+                input.relations.forEach(relation => {
+                    this.relations.push(
+                        new RelationInfo().deserialize(relation)
+                    );
+                });
+            } else {
+                this[prop] = input[prop];
+            }
+        }
+        return this;
+    }
 }
