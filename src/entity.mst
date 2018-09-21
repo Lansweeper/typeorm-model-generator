@@ -14,7 +14,7 @@ import { {{#if hasIndexes}}Index, {{/if}}Entity, PrimaryGeneratedColumn, Column,
         unique: true,{{/is_unique}}{{#lenght}}
         length: {{.}},{{/lenght}}{{#width}}
         width: {{.}},{{/width}}{{#default}}
-        default: '{{escapeQuote .}}',{{/default}}{{#numericPrecision}}
+        default: () => '{{escapeQuote .}}',{{/default}}{{#numericPrecision}}
         precision: {{.}},{{/numericPrecision}}{{#numericScale}}
         scale: {{.}},{{/numericScale}}{{#enumOptions}}
         enum: [{{.}}],{{/enumOptions}}{{#is_array}}
