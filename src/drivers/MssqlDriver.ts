@@ -50,12 +50,13 @@ export class MssqlDriver extends AbstractDriver {
         entities.forEach(ent => {
             response
                 .filter(filterVal => {
-                    return filterVal.TABLE_NAME == ent.EntityName;
+                    return filterVal.TABLE_NAME == ent.entityName;
                 })
                 .forEach(resp => {
                     let colInfo: ColumnInfo = new ColumnInfo();
                     colInfo.tsName = resp.COLUMN_NAME;
                     colInfo.sqlName = resp.COLUMN_NAME;
+                    colInfo.orgName = resp.COLUMN_NAME;
                     colInfo.is_nullable = resp.IS_NULLABLE == "YES";
                     colInfo.is_generated = resp.IsIdentity == 1;
                     colInfo.is_unique = resp.IsUnique == 1;
@@ -191,7 +192,7 @@ export class MssqlDriver extends AbstractDriver {
                                 : null;
                     }
 
-                    if (colInfo.sql_type) ent.Columns.push(colInfo);
+                    if (colInfo.sql_type) ent.columns.push(colInfo);
                 });
         });
         return entities;
@@ -230,17 +231,17 @@ ORDER BY
         entities.forEach(ent => {
             response
                 .filter(filterVal => {
-                    return filterVal.TableName == ent.EntityName;
+                    return filterVal.TableName == ent.entityName;
                 })
                 .forEach(resp => {
                     let indexInfo: IndexInfo = <IndexInfo>{};
                     let indexColumnInfo: IndexColumnInfo = <IndexColumnInfo>{};
                     if (
-                        ent.Indexes.filter(filterVal => {
+                        ent.indexes.filter(filterVal => {
                             return filterVal.name == resp.IndexName;
                         }).length > 0
                     ) {
-                        indexInfo = ent.Indexes.filter(filterVal => {
+                        indexInfo = ent.indexes.filter(filterVal => {
                             return filterVal.name == resp.IndexName;
                         })[0];
                     } else {
@@ -248,7 +249,7 @@ ORDER BY
                         indexInfo.name = resp.IndexName;
                         indexInfo.isUnique = resp.is_unique == 1;
                         indexInfo.isPrimaryKey = resp.is_primary_key == 1;
-                        ent.Indexes.push(indexInfo);
+                        ent.indexes.push(indexInfo);
                     }
                     indexColumnInfo.name = resp.ColumnName;
                     indexInfo.columns.push(indexColumnInfo);

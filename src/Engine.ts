@@ -1,5 +1,7 @@
 import { AbstractDriver } from "./drivers/AbstractDriver";
 import { DatabaseModel } from "./models/DatabaseModel";
+import { ColumnInfo } from "./models/ColumnInfo";
+import { EntityInfo } from "./models/EntityInfo";
 import * as Handlebars from "handlebars";
 import fs = require("fs");
 import path = require("path");
@@ -85,16 +87,16 @@ export class Engine {
         }
         let compliedTemplate = Handlebars.compile(template, { noEscape: true });
         databaseModel.entities.forEach(element => {
-            element.Imports = [];
-            element.Columns.forEach(column => {
+            element.imports = [];
+            element.columns.forEach(column => {
                 column.relations.forEach(relation => {
-                    if (element.EntityName !== relation.relatedTable) {
-                        element.Imports.push(relation.relatedTable);
+                    if (element.entityName !== relation.relatedTable) {
+                        element.imports.push(relation.relatedTable);
                     }
                 });
             });
-            element.GenerateConstructor = this.Options.constructor;
-            element.Imports = element.Imports.filter(function(
+            element.generateConstructor = this.Options.constructor;
+            element.imports = element.imports.filter(function(
                 elem,
                 index,
                 self
@@ -104,16 +106,16 @@ export class Engine {
             let casedFileName = "";
             switch (this.Options.convertCaseFile) {
                 case "camel":
-                    casedFileName = changeCase.camelCase(element.EntityName);
+                    casedFileName = changeCase.camelCase(element.entityName);
                     break;
                 case "param":
-                    casedFileName = changeCase.paramCase(element.EntityName);
+                    casedFileName = changeCase.paramCase(element.entityName);
                     break;
                 case "pascal":
-                    casedFileName = changeCase.pascalCase(element.EntityName);
+                    casedFileName = changeCase.pascalCase(element.entityName);
                     break;
                 case "none":
-                    casedFileName = element.EntityName;
+                    casedFileName = element.entityName;
                     break;
             }
             let resultFilePath = path.resolve(
@@ -230,22 +232,27 @@ export class Engine {
 
         // update model so that we have the case we want, hack which makes --cp and --ce useless
         databaseModel.entities.forEach(entity => {
-            entity.EntityName = changeCase.pascalCase(entity.EntityName);
-            entity.sqlName = entity.EntityName.toLowerCase();
-            entity.Schema = undefined; // blank out
+            entity.entityName = changeCase.pascalCase(entity.entityName);
+            entity.sqlName = entity.entityName.toLowerCase();
+            entity.schema = undefined; // blank out
 
             const compareEntity = compareModel
                 ? _.find(compareModel.entities, { sqlName: entity.sqlName })
                 : undefined;
             if (compareModel) {
                 if (compareEntity) {
-                    entity.EntityName = compareEntity.EntityName;
+                    entity.entityName = compareEntity.entityName;
+                    entity.orgName = compareEntity.orgName;
                 } else {
                     console.log("Could not find entity", entity.sqlName);
                 }
             }
 
-            entity.Columns.forEach(column => {
+            if (!entity.orgName) {
+                entity.orgName = entity.entityName;
+            }
+
+            entity.columns.forEach(column => {
                 column.tsName = changeCase.camelCase(column.tsName);
 
                 column.sqlName = column.tsName.toLowerCase();
@@ -257,126 +264,76 @@ export class Engine {
                 }
 
                 const compareColumn = compareEntity
-                    ? _.find(compareEntity.Columns, { sqlName: column.sqlName })
+                    ? _.find(compareEntity.columns, { sqlName: column.sqlName })
                     : undefined;
                 if (compareEntity) {
                     if (compareColumn) {
                         column.tsName = compareColumn.tsName;
+                        column.orgName = compareColumn.orgName;
                     } else if (
-                        column.tsName.length > 3 &&
-                        column.tsName
-                            .substr(column.tsName.length - 3)
-                            .toLowerCase() === "key"
+                        !this.cleanColumnName(column.sqlName, column, entity)
                     ) {
                         if (
-                            column.tsName.substr(
-                                0,
-                                column.tsName.length - 3
-                            ) === entity.sqlName
+                            column.tsName.substr(column.tsName.length - 1) ===
+                            "s"
                         ) {
-                            column.tsName =
-                                changeCase.camelCase(entity.EntityName) + "Key";
-                        } else {
-                            let name = column.tsName.substr(
-                                0,
-                                column.tsName.length - 3
-                            );
-                            if (
-                                name.length > 2 &&
-                                name.substr(name.length - 2).toLowerCase() ===
-                                    "id"
-                            ) {
-                                if (
-                                    name.substr(0, name.length - 2) ===
-                                    entity.sqlName
-                                ) {
-                                    name =
-                                        changeCase.camelCase(
-                                            entity.EntityName
-                                        ) + "Id";
-                                } else {
-                                    name =
-                                        name.substr(0, name.length - 2) + "Id";
+                            const wrongRelation = _.find(
+                                compareEntity.columns,
+                                {
+                                    sqlName: column.sqlName.substr(
+                                        0,
+                                        column.sqlName.length - 1
+                                    )
                                 }
-                            }
-                            column.tsName = name + "Key";
-                        }
-                    } else if (
-                        column.tsName.length > 2 &&
-                        column.tsName
-                            .substr(column.tsName.length - 2)
-                            .toLowerCase() === "id"
-                    ) {
-                        if (
-                            column.tsName.substr(
-                                0,
-                                column.tsName.length - 2
-                            ) === entity.sqlName
-                        ) {
-                            column.tsName =
-                                changeCase.camelCase(entity.EntityName) + "Id";
-                        } else {
-                            column.tsName =
-                                column.tsName.substr(
-                                    0,
-                                    column.tsName.length - 2
-                                ) + "Id";
-                        }
-                    } else if (column.sqlName == "lastmodifiedon") {
-                        column.tsName = "lastModifiedOn";
-                    } else if (column.sqlName == "lastmodifiedby") {
-                        column.tsName = "lastModifiedBy";
-                    } else if (column.sqlName == "createdat") {
-                        column.tsName = "createdAt";
-                    } else if (column.sqlName == "createdby") {
-                        column.tsName = "createdBy";
-                    } else if (
-                        column.tsName.substr(column.tsName.length - 1) === "s"
-                    ) {
-                        const wrongRelation = _.find(compareEntity.Columns, {
-                            sqlName: column.sqlName.substr(
-                                0,
-                                column.tsName.length - 1
-                            )
-                        });
-                        if (wrongRelation) {
-                            if (column.relations && wrongRelation.relations) {
-                                console.log(
-                                    "relations mismatch",
-                                    entity.EntityName,
-                                    column.tsName,
-                                    column.relations[0].relationType,
-                                    wrongRelation.relations[0].relationType
-                                );
+                            );
+                            if (wrongRelation) {
+                                if (
+                                    column.relations &&
+                                    wrongRelation.relations
+                                ) {
+                                    console.log(
+                                        "relations mismatch",
+                                        entity.entityName,
+                                        column.tsName,
+                                        column.relations[0].relationType,
+                                        wrongRelation.relations[0].relationType
+                                    );
+                                } else {
+                                    console.log(
+                                        "relations mismatch",
+                                        entity.entityName,
+                                        column.tsName,
+                                        column.relations,
+                                        wrongRelation.relations
+                                    );
+                                }
                             } else {
                                 console.log(
-                                    "relations mismatch",
-                                    entity.EntityName,
-                                    column.tsName,
-                                    column.relations,
-                                    wrongRelation.relations
+                                    "Could not find relationship column",
+                                    entity.entityName,
+                                    column.tsName
                                 );
                             }
                         } else {
                             console.log(
                                 "Could not find column",
-                                entity.EntityName,
+                                entity.entityName,
                                 column.tsName
                             );
                         }
-                    } else {
-                        console.log(
-                            "Could not find column",
-                            entity.EntityName,
-                            column.tsName
-                        );
                     }
+                } else {
+                    this.cleanColumnName(column.tsName, column, entity);
+                }
+
+                if (!column.orgName) {
+                    column.orgName = column.tsName;
                 }
             });
 
-            entity.Indexes.forEach(index => {
+            entity.indexes.forEach(index => {
                 index.columns.forEach(indexCol => {
-                    const columnInfo = _.find(entity.Columns, {
+                    const columnInfo = _.find(entity.columns, {
                         sqlName: changeCase
                             .camelCase(indexCol.name)
                             .toLowerCase()
@@ -391,7 +348,7 @@ export class Engine {
         if (this.Options.compare) {
             // loop back through and fix the relationships
             databaseModel.entities.forEach(entity => {
-                entity.Columns.forEach(column => {
+                entity.columns.forEach(column => {
                     if (column.relations) {
                         column.relations.forEach(relation => {
                             const relatedEntity = _.find(
@@ -404,9 +361,9 @@ export class Engine {
                             );
                             if (relatedEntity) {
                                 relation.relatedTable =
-                                    relatedEntity.EntityName;
+                                    relatedEntity.entityName;
                                 const relatedColumn = _.find(
-                                    relatedEntity.Columns,
+                                    relatedEntity.columns,
                                     {
                                         sqlName: changeCase
                                             .camelCase(relation.relatedColumn)
@@ -433,9 +390,9 @@ export class Engine {
                                 );
                                 if (ownerEntity) {
                                     relation.ownerTable =
-                                        ownerEntity.EntityName;
+                                        ownerEntity.entityName;
                                     const ownerColumn = _.find(
-                                        ownerEntity.Columns,
+                                        ownerEntity.columns,
                                         {
                                             sqlName: changeCase
                                                 .camelCase(relation.ownerColumn)
@@ -447,7 +404,7 @@ export class Engine {
                                             ownerColumn.tsName;
                                     } else {
                                         const ownerColumn = _.find(
-                                            relatedEntity.Columns,
+                                            relatedEntity.columns,
                                             {
                                                 sqlName: changeCase
                                                     .camelCase(
@@ -492,6 +449,58 @@ export class Engine {
             JSON.stringify(databaseModel, null, 2),
             { encoding: "UTF-8", flag: "w" }
         );
+    }
+
+    private cleanColumnName(
+        name: string,
+        column: ColumnInfo,
+        entity: EntityInfo
+    ): boolean {
+        let rtn = true;
+        if (
+            name.length > 3 &&
+            name.substr(name.length - 3).toLowerCase() === "key"
+        ) {
+            if (name.substr(0, name.length - 3) === entity.sqlName) {
+                column.tsName = changeCase.camelCase(entity.entityName) + "Key";
+            } else {
+                let colName = name.substr(0, name.length - 3);
+                if (
+                    colName.length > 2 &&
+                    colName.substr(colName.length - 2).toLowerCase() === "id"
+                ) {
+                    if (
+                        colName.substr(0, colName.length - 2) === entity.sqlName
+                    ) {
+                        colName =
+                            changeCase.camelCase(entity.entityName) + "Id";
+                    } else {
+                        colName = colName.substr(0, colName.length - 2) + "Id";
+                    }
+                }
+                column.tsName = colName + "Key";
+            }
+        } else if (
+            name.length > 2 &&
+            name.substr(name.length - 2).toLowerCase() === "id"
+        ) {
+            if (name.substr(0, name.length - 2) === entity.sqlName) {
+                column.tsName = changeCase.camelCase(entity.entityName) + "Id";
+            } else {
+                column.tsName = name.substr(0, name.length - 2) + "Id";
+            }
+        } else if (name == "lastmodifiedon") {
+            column.tsName = "lastModifiedOn";
+        } else if (name == "lastmodifiedby") {
+            column.tsName = "lastModifiedBy";
+        } else if (name.substr(name.length - 2) === "at") {
+            column.tsName = name.substr(0, name.length - 2) + "At";
+        } else if (name.substr(name.length - 2) === "by") {
+            column.tsName = name.substr(0, name.length - 2) + "By";
+        } else {
+            rtn = false;
+        }
+        return rtn;
     }
 
     //TODO:Move to mustache template file

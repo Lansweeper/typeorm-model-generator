@@ -53,7 +53,7 @@ export class OracleDriver extends AbstractDriver {
         entities.forEach(ent => {
             response
                 .filter(filterVal => {
-                    return filterVal.TABLE_NAME == ent.EntityName;
+                    return filterVal.TABLE_NAME == ent.entityName;
                 })
                 .forEach(resp => {
                     let colInfo: ColumnInfo = new ColumnInfo();
@@ -179,7 +179,7 @@ export class OracleDriver extends AbstractDriver {
                             resp.DATA_LENGTH > 0 ? resp.DATA_LENGTH : null;
                     }
 
-                    if (colInfo.sql_type) ent.Columns.push(colInfo);
+                    if (colInfo.sql_type) ent.columns.push(colInfo);
                 });
         });
         return entities;
@@ -204,17 +204,17 @@ export class OracleDriver extends AbstractDriver {
         entities.forEach(ent => {
             response
                 .filter(filterVal => {
-                    return filterVal.TABLE_NAME == ent.EntityName;
+                    return filterVal.TABLE_NAME == ent.entityName;
                 })
                 .forEach(resp => {
                     let indexInfo: IndexInfo = <IndexInfo>{};
                     let indexColumnInfo: IndexColumnInfo = <IndexColumnInfo>{};
                     if (
-                        ent.Indexes.filter(filterVal => {
+                        ent.indexes.filter(filterVal => {
                             return filterVal.name == resp.INDEX_NAME;
                         }).length > 0
                     ) {
-                        indexInfo = ent.Indexes.filter(filterVal => {
+                        indexInfo = ent.indexes.filter(filterVal => {
                             return filterVal.name == resp.INDEX_NAME;
                         })[0];
                     } else {
@@ -222,7 +222,7 @@ export class OracleDriver extends AbstractDriver {
                         indexInfo.name = resp.INDEX_NAME;
                         indexInfo.isUnique = resp.UNIQUENESS == "UNIQUE";
                         indexInfo.isPrimaryKey = resp.ISPRIMARYKEY == 1;
-                        ent.Indexes.push(indexInfo);
+                        ent.indexes.push(indexInfo);
                     }
                     indexColumnInfo.name = resp.COLUMN_NAME;
                     indexInfo.columns.push(indexColumnInfo);

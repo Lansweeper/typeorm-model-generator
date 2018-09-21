@@ -50,10 +50,10 @@ describe('MssqlDriver', function () {
         let result = await driver.GetAllTables('schema')
         let expectedResult = <EntityInfo[]>[];
         let y = new EntityInfo();
-        y.EntityName = 'name'
-        y.Schema='schema'
-        y.Columns = <ColumnInfo[]>[];
-        y.Indexes = <IndexInfo[]>[];
+        y.entityName = 'name'
+        y.schema='schema'
+        y.columns = <ColumnInfo[]>[];
+        y.indexes = <IndexInfo[]>[];
         expectedResult.push(y)
         expect(result).to.be.deep.equal(expectedResult)
     })
@@ -76,12 +76,12 @@ describe('MssqlDriver', function () {
 
         let entities = <EntityInfo[]>[];
         let y = new EntityInfo();
-        y.EntityName = 'name'
-        y.Columns = <ColumnInfo[]>[];
-        y.Indexes = <IndexInfo[]>[];
+        y.entityName = 'name'
+        y.columns = <ColumnInfo[]>[];
+        y.indexes = <IndexInfo[]>[];
         entities.push(y)
         var expected: EntityInfo[] = JSON.parse(JSON.stringify(entities));
-        expected[0].Columns.push(new ColumnInfo().deserialize({
+        expected[0].columns.push(new ColumnInfo().deserialize({
             lenght: null,
             default: 'a',
             is_nullable: true,

@@ -52,12 +52,13 @@ export class PostgresDriver extends AbstractDriver {
         entities.forEach(ent => {
             response
                 .filter(filterVal => {
-                    return filterVal.table_name == ent.EntityName;
+                    return filterVal.table_name == ent.entityName;
                 })
                 .forEach(resp => {
                     let colInfo: ColumnInfo = new ColumnInfo();
                     colInfo.tsName = resp.column_name;
                     colInfo.sqlName = resp.column_name;
+                    colInfo.orgName = resp.column_name;
                     colInfo.is_nullable = resp.is_nullable == "YES";
                     colInfo.is_generated = resp.isidentity == "YES";
                     colInfo.is_unique = resp.isunique == 1;
@@ -131,7 +132,7 @@ export class PostgresDriver extends AbstractDriver {
                                 : null;
                     }
                     if (colInfo.sql_type && colInfo.ts_type) {
-                        ent.Columns.push(colInfo);
+                        ent.columns.push(colInfo);
                     }
                 });
         });
@@ -404,17 +405,17 @@ export class PostgresDriver extends AbstractDriver {
         entities.forEach(ent => {
             response
                 .filter(filterVal => {
-                    return filterVal.tablename == ent.EntityName;
+                    return filterVal.tablename == ent.entityName;
                 })
                 .forEach(resp => {
                     let indexInfo: IndexInfo = <IndexInfo>{};
                     let indexColumnInfo: IndexColumnInfo = <IndexColumnInfo>{};
                     if (
-                        ent.Indexes.filter(filterVal => {
+                        ent.indexes.filter(filterVal => {
                             return filterVal.name == resp.indexname;
                         }).length > 0
                     ) {
-                        indexInfo = ent.Indexes.filter(filterVal => {
+                        indexInfo = ent.indexes.filter(filterVal => {
                             return filterVal.name == resp.indexname;
                         })[0];
                     } else {
@@ -422,7 +423,7 @@ export class PostgresDriver extends AbstractDriver {
                         indexInfo.name = resp.indexname;
                         indexInfo.isUnique = resp.is_unique == 1;
                         indexInfo.isPrimaryKey = resp.is_primary_key == 1;
-                        ent.Indexes.push(indexInfo);
+                        ent.indexes.push(indexInfo);
                     }
                     indexColumnInfo.name = resp.columnname;
                     if (resp.is_primary_key == 0) {

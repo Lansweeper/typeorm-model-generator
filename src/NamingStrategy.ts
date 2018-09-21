@@ -10,10 +10,10 @@ export class NamingStrategy extends AbstractNamingStrategy {
     ): string {
         let isRelationToMany = relation.isOneToMany || relation.isManyToMany;
         let ownerEntity = dbModel.entities.filter(v => {
-            return v.EntityName == relation.ownerTable;
+            return v.entityName == relation.ownerTable;
         })[0];
         let referencedEntity = dbModel.entities.filter(v => {
-            return v.EntityName == relation.relatedTable;
+            return v.entityName == relation.relatedTable;
         })[0];
 
         let columnName =
@@ -24,7 +24,7 @@ export class NamingStrategy extends AbstractNamingStrategy {
                 .toLowerCase()
                 .endsWith(
                     "id"
-                ) /*&& !ownerEntity.Columns.some(x=>x.tsName==columnName && x.isPrimary)*/
+                ) /*&& !ownerEntity.columns.some(x=>x.tsName==columnName && x.isPrimary)*/
         ) {
             columnName = columnName.substring(
                 0,
@@ -43,16 +43,16 @@ export class NamingStrategy extends AbstractNamingStrategy {
             relation.relationType != "ManyToMany" &&
             columnOldName != columnName
         ) {
-            if (ownerEntity.Columns.some(v => v.tsName == columnName)) {
+            if (ownerEntity.columns.some(v => v.tsName == columnName)) {
                 columnName = columnName + "_";
-                for (let i = 2; i <= ownerEntity.Columns.length; i++) {
+                for (let i = 2; i <= ownerEntity.columns.length; i++) {
                     columnName =
                         columnName.substring(
                             0,
                             columnName.length - i.toString().length
                         ) + i.toString();
                     if (
-                        ownerEntity.Columns.every(
+                        ownerEntity.columns.every(
                             v =>
                                 v.tsName != columnName ||
                                 columnName == columnOldName

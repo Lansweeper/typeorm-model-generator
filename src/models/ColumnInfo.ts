@@ -3,6 +3,7 @@ import { RelationInfo } from "./RelationInfo";
 export class ColumnInfo {
     tsName: string = "";
     sqlName: string = "";
+    orgName: string;
     default: string | null = null;
     is_nullable: boolean = false;
     is_unique: boolean = false;

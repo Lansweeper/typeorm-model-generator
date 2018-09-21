@@ -3,28 +3,30 @@ import { IndexInfo } from "./IndexInfo";
 import { RelationInfo } from "./RelationInfo";
 
 export class EntityInfo {
-    EntityName: string;
+    entityName: string;
     sqlName: string;
-    Columns: ColumnInfo[];
-    Imports: string[];
-    Indexes: IndexInfo[];
-    Schema: string | undefined;
-    GenerateConstructor: boolean;
+    orgName: string;
+    columns: ColumnInfo[];
+    imports: string[];
+    indexes: IndexInfo[];
+    schema: string | undefined;
+    generateConstructor: boolean;
 
-    deserialize(input: EntityInfo) {
-        this.EntityName = input.EntityName;
+    deserialize(input: any) {
+        this.entityName = input.entityName;
         this.sqlName = input.sqlName;
+        this.orgName = input.orgName;
 
-        this.Imports = input.Imports;
-        this.Indexes = input.Indexes;
-        this.Schema = input.Schema;
-        this.GenerateConstructor = input.GenerateConstructor;
+        this.imports = input.imports;
+        this.indexes = input.indexes;
+        this.schema = input.schema;
+        this.generateConstructor = input.generateConstructor;
 
-        if (input.Columns) {
-            this.Columns = [];
-            input.Columns.forEach(column => {
+        if (input.columns) {
+            this.columns = [];
+            input.columns.forEach(column => {
                 const c = new ColumnInfo().deserialize(column);
-                this.Columns.push(c);
+                this.columns.push(c);
             });
         }
 
@@ -33,7 +35,7 @@ export class EntityInfo {
 
     hasRelation(checkRelation: (relation: RelationInfo) => boolean): boolean {
         let rtn: boolean = false;
-        this.Columns.forEach(column => {
+        this.columns.forEach(column => {
             column.relations.forEach(relation => {
                 if (checkRelation(relation)) {
                     rtn = true;
@@ -72,6 +74,6 @@ export class EntityInfo {
     }
 
     get hasIndexes(): boolean {
-        return this.Indexes && this.Indexes.length > 0;
+        return this.indexes && this.indexes.length > 0;
     }
 }

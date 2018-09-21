@@ -1,11 +1,11 @@
 import { {{#if hasIndexes}}Index, {{/if}}Entity, PrimaryGeneratedColumn, Column, {{#if hasOneToOne}}OneToOne, {{/if}}{{#if hasOneToMany}}OneToMany, {{/if}}{{#if hasManyToOne}}ManyToOne, {{/if}}{{#if hasManyToMany}}ManyToMany, JoinTable, {{/if}}{{#if hasJoinColumn}}JoinColumn, {{/if}}{{#if relationIdField}}RelationId {{/if}}{{~#if 1~}} }{{/if}} from 'typeorm';
-{{#each Imports}}import {{curly true}} {{ this }} {{curly false}} from './{{ this }}';
+{{#each imports}}import {{curly true}} {{ this }} {{curly false}} from './{{ this }}';
 {{/each}}
 
-@Entity('{{sqlName}}'{{#Schema}}, {schema: '{{.}}'}{{/Schema}})
-{{#Indexes}}{{^isPrimaryKey}}@Index('{{name}}', [{{#columns}}'{{name}}', {{/columns}}]{{#isUnique}}, {unique:true}{{/isUnique}})
-{{/isPrimaryKey}}{{/Indexes}}export class {{toEntityName EntityName}} {
-{{#Columns}}
+@Entity('{{sqlName}}'{{#schema}}, {schema: '{{.}}'}{{/schema}})
+{{#indexes}}{{^isPrimaryKey}}@Index('{{name}}', [{{#columns}}'{{name}}', {{/columns}}]{{#isUnique}}, {unique:true}{{/isUnique}})
+{{/isPrimaryKey}}{{/indexes}}export class {{toEntityName entityName}} {
+{{#columns}}
 
    {{^relations}}{{#is_generated}} @PrimaryGeneratedColumn({ {{/is_generated}}{{^is_generated}} @Column('{{sql_type}}', { {{#is_nullable}}
         nullable: true,{{/is_nullable}}{{^is_nullable}}
@@ -29,10 +29,10 @@ import { {{#if hasIndexes}}Index, {{/if}}Entity, PrimaryGeneratedColumn, Column,
     {{/if}}
     {{#if relationIdField }}
 
-    @RelationId(({{../../EntityName}}: {{../../EntityName}}) => {{../../EntityName}}.{{toPropertyName ../tsName}})
-    {{toPropertyName ../tsName}}Id: {{#if isOneToOne}}{{toLazy ../ts_type}}{{else}}{{toLazy (concat  ../ts_type '[]')}}{{/if}};{{/if}}{{/relations}}{{/Columns}}
-    {{#if GenerateConstructor}}
-    constructor(init?: Partial<{{toEntityName EntityName}}>) {
+    @RelationId(({{../../entityName}}: {{../../entityName}}) => {{../../entityName}}.{{toPropertyName ../tsName}})
+    {{toPropertyName ../tsName}}Id: {{#if isOneToOne}}{{toLazy ../ts_type}}{{else}}{{toLazy (concat  ../ts_type '[]')}}{{/if}};{{/if}}{{/relations}}{{/columns}}
+    {{#if generateConstructor}}
+    constructor(init?: Partial<{{toEntityName entityName}}>) {
 		Object.assign(this, init);
 	}
     {{/if}}
