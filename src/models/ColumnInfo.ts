@@ -1,4 +1,11 @@
 import { RelationInfo } from "./RelationInfo";
+import { FunctionType } from "./FunctionType";
+import {
+    Functions,
+    getDateFunctions,
+    getNumberFunctions,
+    getStringFunctions
+} from "./Functions";
 
 export class ColumnInfo {
     tsName: string = "";
@@ -55,5 +62,17 @@ export class ColumnInfo {
         }
 
         return this;
+    }
+
+    get availableFunctions(): FunctionType[] {
+        if (this.ts_type === "string") {
+            return getStringFunctions();
+        } else if (this.ts_type === "Date") {
+            return getDateFunctions();
+        } else if (this.ts_type === "number") {
+            return getNumberFunctions();
+        } else {
+            return [];
+        }
     }
 }
