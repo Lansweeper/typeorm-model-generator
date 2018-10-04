@@ -6,6 +6,7 @@ export class EntityInfo {
     entityName: string;
     sqlName: string;
     orgName: string;
+    description?: string;
     columns: ColumnInfo[];
     imports: string[];
     indexes: IndexInfo[];

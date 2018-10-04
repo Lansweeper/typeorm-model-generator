@@ -82,7 +82,7 @@ describe('MssqlDriver', function () {
         entities.push(y)
         var expected: EntityInfo[] = JSON.parse(JSON.stringify(entities));
         expected[0].columns.push(new ColumnInfo().deserialize({
-            lenght: null,
+            length: null,
             default: 'a',
             is_nullable: true,
             isPrimary: false,

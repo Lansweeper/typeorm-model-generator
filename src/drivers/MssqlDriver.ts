@@ -186,7 +186,7 @@ export class MssqlDriver extends AbstractDriver {
                             v => v == colInfo.sql_type
                         )
                     ) {
-                        colInfo.lenght =
+                        colInfo.length =
                             resp.CHARACTER_MAXIMUM_LENGTH > 0
                                 ? resp.CHARACTER_MAXIMUM_LENGTH
                                 : null;

@@ -167,7 +167,7 @@ export class SqliteDriver extends AbstractDriver {
                     ) &&
                     options
                 ) {
-                    colInfo.lenght = <any>options[0].substring(
+                    colInfo.length = <any>options[0].substring(
                         1,
                         options[0].length - 1
                     );

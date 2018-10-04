@@ -175,7 +175,7 @@ export class OracleDriver extends AbstractDriver {
                             v => v == colInfo.sql_type
                         )
                     ) {
-                        colInfo.lenght =
+                        colInfo.length =
                             resp.DATA_LENGTH > 0 ? resp.DATA_LENGTH : null;
                     }
 

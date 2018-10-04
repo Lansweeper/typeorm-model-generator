@@ -4,6 +4,8 @@ export class ColumnInfo {
     tsName: string = "";
     sqlName: string = "";
     orgName: string;
+    description?: string;
+    visible: boolean = true;
     default: string | null = null;
     is_nullable: boolean = false;
     is_unique: boolean = false;
@@ -18,7 +20,7 @@ export class ColumnInfo {
         | "string | string[]"
         | "any";
     sql_type: string;
-    lenght: number | null = null;
+    length: number | null = null;
     width: number | null = null;
     isPrimary: boolean = false;
     is_generated: boolean = false;
@@ -48,6 +50,10 @@ export class ColumnInfo {
                 this[prop] = input[prop];
             }
         }
+        if (input["lenght"]) {
+            this.length = input["lenght"];
+        }
+
         return this;
     }
 }

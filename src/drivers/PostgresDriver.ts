@@ -116,7 +116,7 @@ export class PostgresDriver extends AbstractDriver {
                             v => v == colInfo.sql_type
                         )
                     ) {
-                        colInfo.lenght =
+                        colInfo.length =
                             resp.character_maximum_length > 0
                                 ? resp.character_maximum_length
                                 : null;
