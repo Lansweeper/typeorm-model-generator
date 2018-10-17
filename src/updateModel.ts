@@ -5,22 +5,24 @@ const Parser = require("parse-xl");
 const mappingData = new Parser("mapping.xlsx");
 const mapping = mappingData.data.Sheet1;
 
-// Uppercase / lowercase first letter
-const up = string => string.charAt(0).toUpperCase() + string.slice(1);
-const lw = string => string.charAt(0).toLowerCase() + string.slice(1);
+// Case insensitive find
+const findCache = {};
+function find2(arr: any[], str: string) {
+    if (!findCache[str]) {
+        findCache[str] = find(arr, item => {
+            return item.table.toLowerCase() === str.toLowerCase();
+        });
+    }
+    return findCache[str];
+}
 
 function getNewTableName(name: string) {
-    const match = find(mapping, { table: lw(name) });
+    const match = find2(mapping, name);
     if (match) {
-        console.info("Found match for", name, " == ", match.new);
+        console.warn("Found match for", name, " == ", match.new);
         return match ? match.new : name;
-    } else {
-        const match2 = find(mapping, { table: name });
-        if (match2) {
-            return match2 ? match2.new : name;
-        }
     }
-    console.error("No match for", name);
+    //console.error("No match for", name);
     return name;
 }
 
