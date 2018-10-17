@@ -9,6 +9,7 @@ import * as TomgUtils from "./Utils";
 import changeCase = require("change-case");
 import { AbstractNamingStrategy } from "./AbstractNamingStrategy";
 import * as _ from "lodash";
+import { updateModel } from "./updateModel";
 
 export class Engine {
     constructor(
@@ -19,9 +20,10 @@ export class Engine {
     public async createModelFromDatabase(): Promise<boolean> {
         let dbModel;
         if (this.Options.model) {
-            dbModel = new DatabaseModel().deserialize(
-                JSON.parse(fs.readFileSync(this.Options.model, "utf8"))
-            );
+            const modelFile = fs.readFileSync(this.Options.model, "utf8");
+            const updatedModel = updateModel(JSON.parse(modelFile));
+
+            dbModel = new DatabaseModel().deserialize(updatedModel);
         } else {
             dbModel = await this.getEntitiesInfo(
                 this.Options.databaseName,

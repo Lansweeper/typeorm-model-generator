@@ -11,7 +11,8 @@
         "precommit": "gulp pre-commit",
         "gen": "ts-node ./node_modules/typeorm/cli.js migration:generate -n ALL",
         "migrate": "ts-node ./node_modules/typeorm/cli.js migration:run",
-        "drop": "ts-node ./node_modules/typeorm/cli.js schema:drop"
+        "drop": "ts-node ./node_modules/typeorm/cli.js schema:drop",
+        "generate": "node ./dist/src/index.js --namingStrategy=./NamingStrategy -m databaseModel_psql.json"
     },
     "repository": {
         "type": "git",
